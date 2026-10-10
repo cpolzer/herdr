@@ -11,6 +11,9 @@ pub(crate) const HERDR_WORKSPACE_ID_ENV_VAR: &str = "HERDR_WORKSPACE_ID";
 
 pub(crate) const PI_CODING_AGENT_DIR_ENV_VAR: &str = "PI_CODING_AGENT_DIR";
 pub(crate) const OMP_CONFIG_DIR_ENV_VAR: &str = "PI_CONFIG_DIR";
+pub(crate) const PIG_CODING_AGENT_DIR_ENV_VAR: &str = "PIG_CODING_AGENT_DIR";
+pub(crate) const PIG_HOME_ENV_VAR: &str = "PIG_HOME";
+pub(crate) const PIG_USE_PI_DIRS_ENV_VAR: &str = "PIG_USE_PI_DIRS";
 pub(crate) const CLAUDE_CONFIG_DIR_ENV_VAR: &str = "CLAUDE_CONFIG_DIR";
 pub(crate) const CODEX_HOME_ENV_VAR: &str = "CODEX_HOME";
 pub(crate) const KIMI_CODE_HOME_ENV_VAR: &str = "KIMI_CODE_HOME";
@@ -37,6 +40,23 @@ pub(crate) fn pi_extension_dir() -> io::Result<PathBuf> {
         config_dir_from_env_or_home(PI_CODING_AGENT_DIR_ENV_VAR, &[".pi", "agent"])?
             .join("extensions"),
     )
+}
+
+/// PiG reads `PIG_CODING_AGENT_DIR`, then `PIG_HOME/agent`, then `~/.pig/agent`.
+/// With `PIG_USE_PI_DIRS=1` it shares Pi's agent directory instead.
+pub(crate) fn pig_extension_dir() -> io::Result<PathBuf> {
+    if std::env::var_os(PIG_USE_PI_DIRS_ENV_VAR).is_some_and(|value| value == "1") {
+        return pi_extension_dir();
+    }
+    if let Some(value) =
+        std::env::var_os(PIG_CODING_AGENT_DIR_ENV_VAR).filter(|value| !value.is_empty())
+    {
+        return expand_tilde_path(PathBuf::from(value)).map(|path| path.join("extensions"));
+    }
+
+    Ok(config_dir_from_env_or_home(PIG_HOME_ENV_VAR, &[".pig"])?
+        .join("agent")
+        .join("extensions"))
 }
 
 pub(crate) fn omp_extension_dir() -> io::Result<PathBuf> {

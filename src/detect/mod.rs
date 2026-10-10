@@ -337,6 +337,7 @@ pub(crate) fn full_lifecycle_hook_authority(source: &str, agent_label: &str) -> 
     matches!(
         (source, agent_label),
         ("herdr:pi", "pi")
+            | ("herdr:pig", "pig")
             | ("herdr:omp", "omp")
             | ("herdr:mastracode", "mastracode")
             | ("herdr:opencode", "opencode")

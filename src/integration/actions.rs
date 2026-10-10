@@ -4,11 +4,12 @@ use super::registry::{integration_target_label, integration_target_supported};
 use super::targets::{
     install_antigravity_cli, install_claude, install_codex, install_copilot, install_cursor,
     install_devin, install_droid, install_grok, install_hermes, install_kilo, install_kimi,
-    install_letta, install_mastracode, install_omp, install_opencode, install_pi, install_qodercli,
-    install_qwen, uninstall_antigravity_cli, uninstall_claude, uninstall_codex, uninstall_copilot,
-    uninstall_cursor, uninstall_devin, uninstall_droid, uninstall_grok, uninstall_hermes,
-    uninstall_kilo, uninstall_kimi, uninstall_letta, uninstall_mastracode, uninstall_omp,
-    uninstall_opencode, uninstall_pi, uninstall_qodercli, uninstall_qwen,
+    install_letta, install_mastracode, install_omp, install_opencode, install_pi, install_pig,
+    install_qodercli, install_qwen, uninstall_antigravity_cli, uninstall_claude, uninstall_codex,
+    uninstall_copilot, uninstall_cursor, uninstall_devin, uninstall_droid, uninstall_grok,
+    uninstall_hermes, uninstall_kilo, uninstall_kimi, uninstall_letta, uninstall_mastracode,
+    uninstall_omp, uninstall_opencode, uninstall_pi, uninstall_pig, uninstall_qodercli,
+    uninstall_qwen,
 };
 use super::version::{agent_version_requirement, enforce_agent_version};
 use super::{KIMI_MIN_VERSION, PI_EXTENSION_INSTALL_NAME};
@@ -72,6 +73,36 @@ pub(crate) fn uninstall_experimental_letta() -> io::Result<Vec<String>> {
     });
     let outcome = if result.is_ok() { "ok" } else { "error" };
     crate::logging::integration_action("uninstall", "letta", outcome);
+    result
+}
+
+/// Experimental PiG install. Like Letta, PiG stays out of the frozen client
+/// endpoint `IntegrationTarget` enum. Fold into the agent registry when it lands.
+pub(crate) fn install_experimental_pig() -> io::Result<Vec<String>> {
+    let result =
+        install_pig().map(|path| vec![format!("installed pig integration to {}", path.display())]);
+    let outcome = if result.is_ok() { "ok" } else { "error" };
+    crate::logging::integration_action("install", "pig", outcome);
+    result
+}
+
+/// Experimental PiG uninstall counterpart.
+pub(crate) fn uninstall_experimental_pig() -> io::Result<Vec<String>> {
+    let result = uninstall_pig().map(|result| {
+        if result.removed_extension {
+            vec![format!(
+                "removed pig integration extension at {}",
+                result.extension_path.display()
+            )]
+        } else {
+            vec![format!(
+                "no pig integration extension found at {}",
+                result.extension_path.display()
+            )]
+        }
+    });
+    let outcome = if result.is_ok() { "ok" } else { "error" };
+    crate::logging::integration_action("uninstall", "pig", outcome);
     result
 }
 
