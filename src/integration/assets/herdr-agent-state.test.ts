@@ -49,6 +49,7 @@ afterEach(async () => {
 const integrations = [
   { name: "Pi", modulePath: "./pi/herdr-agent-state.ts" },
   { name: "Oh My Pi", modulePath: "./omp/herdr-agent-state.ts" },
+  { name: "PiG", modulePath: "./pig/herdr-agent-state.ts" },
 ] as const;
 
 const socketPlugins = [

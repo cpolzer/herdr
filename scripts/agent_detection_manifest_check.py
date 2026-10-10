@@ -58,7 +58,14 @@ MAX_MATCHER_CHARS = 512
 # version, published sha256). Remove an entry once the bundled manifest ships.
 STAGED_PUBLISHED_MANIFESTS: dict[str, tuple[str, str, str]] = {}
 
-UNPUBLISHED_BUNDLED_MANIFESTS: dict[str, tuple[str, str]] = {}
+UNPUBLISHED_BUNDLED_MANIFESTS: dict[str, tuple[str, str]] = {
+    # Stable clients cannot identify `pig` yet. Remove this entry and add the
+    # catalog entry once a release that bundles the Pig agent ships.
+    "pig": (
+        "2026.10.10.1",
+        "ae54ec511420eba323b6f0d68f07d6b84e41483bc986159924473245c1198a07",
+    ),
+}
 
 
 def parse_args() -> argparse.Namespace:

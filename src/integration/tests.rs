@@ -131,6 +131,9 @@ fn enforce_agent_version_accepts_current_version() {
 fn clear_integration_path_env() {
     std::env::remove_var(PI_CODING_AGENT_DIR_ENV_VAR);
     std::env::remove_var(OMP_CONFIG_DIR_ENV_VAR);
+    std::env::remove_var(PIG_CODING_AGENT_DIR_ENV_VAR);
+    std::env::remove_var(PIG_HOME_ENV_VAR);
+    std::env::remove_var(PIG_USE_PI_DIRS_ENV_VAR);
     std::env::remove_var(CLAUDE_CONFIG_DIR_ENV_VAR);
     std::env::remove_var(CODEX_HOME_ENV_VAR);
     std::env::remove_var(COPILOT_HOME_ENV_VAR);
@@ -722,6 +725,90 @@ fn install_omp_refuses_shared_pi_extension_directory() {
     assert!(err.contains(&ext_dir.display().to_string()));
     assert!(pi_extension.is_file());
     assert!(!ext_dir.join(OMP_EXTENSION_INSTALL_NAME).exists());
+
+    clear_integration_path_env();
+    let _ = fs::remove_dir_all(base);
+}
+
+#[test]
+fn install_pig_writes_embedded_asset_to_pig_extensions_dir() {
+    let _lock = integration_env_lock();
+    clear_integration_path_env();
+    let base = unique_base();
+    let home = base.join("home");
+    let agent_dir = home.join(".pig/agent");
+    fs::create_dir_all(&agent_dir).unwrap();
+    std::env::set_var("HOME", &home);
+
+    let path = install_pig().unwrap();
+
+    assert_eq!(
+        path,
+        agent_dir
+            .join("extensions")
+            .join(PIG_EXTENSION_INSTALL_NAME)
+    );
+    assert_eq!(fs::read_to_string(&path).unwrap(), PIG_EXTENSION_ASSET);
+    assert!(PIG_EXTENSION_ASSET.contains("HERDR_INTEGRATION_ID=pig"));
+
+    let removed = uninstall_pig().unwrap();
+    assert!(removed.removed_extension);
+    assert!(!path.exists());
+    assert!(!uninstall_pig().unwrap().removed_extension);
+
+    std::env::remove_var("HOME");
+    let _ = fs::remove_dir_all(base);
+}
+
+#[test]
+fn install_pig_prefers_agent_dir_env_over_pig_home() {
+    let _lock = integration_env_lock();
+    clear_integration_path_env();
+    let base = unique_base();
+    let pig_home = base.join("pig-home");
+    let agent_dir = base.join("custom-agent");
+    fs::create_dir_all(pig_home.join("agent")).unwrap();
+    fs::create_dir_all(&agent_dir).unwrap();
+    std::env::set_var("HOME", base.join("home"));
+
+    std::env::set_var(PIG_HOME_ENV_VAR, &pig_home);
+    let from_home = install_pig().unwrap();
+    assert_eq!(
+        from_home,
+        pig_home
+            .join("agent/extensions")
+            .join(PIG_EXTENSION_INSTALL_NAME)
+    );
+
+    std::env::set_var(PIG_CODING_AGENT_DIR_ENV_VAR, &agent_dir);
+    let from_agent_dir = install_pig().unwrap();
+    assert_eq!(
+        from_agent_dir,
+        agent_dir
+            .join("extensions")
+            .join(PIG_EXTENSION_INSTALL_NAME)
+    );
+
+    std::env::remove_var("HOME");
+    clear_integration_path_env();
+    let _ = fs::remove_dir_all(base);
+}
+
+#[test]
+fn install_pig_refuses_shared_pi_extension_directory() {
+    let _lock = integration_env_lock();
+    clear_integration_path_env();
+    let base = unique_base();
+    let agent_dir = base.join("shared-agent");
+    let ext_dir = agent_dir.join("extensions");
+    fs::create_dir_all(&ext_dir).unwrap();
+    std::env::set_var(PI_CODING_AGENT_DIR_ENV_VAR, &agent_dir);
+    std::env::set_var(PIG_USE_PI_DIRS_ENV_VAR, "1");
+
+    let err = install_pig().unwrap_err().to_string();
+
+    assert!(err.contains("Pi and PiG resolve to the same extension directory"));
+    assert!(!ext_dir.join(PIG_EXTENSION_INSTALL_NAME).exists());
 
     clear_integration_path_env();
     let _ = fs::remove_dir_all(base);

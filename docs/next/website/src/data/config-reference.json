@@ -1194,6 +1194,17 @@
           ]
         },
         {
+          "key": "ui.sound.agents.pig",
+          "type": "enum",
+          "default": "\"default\"",
+          "description": "Sound override for detected PiG agents.",
+          "values": [
+            "default",
+            "on",
+            "off"
+          ]
+        },
+        {
           "key": "ui.sound.agents.claude",
           "type": "enum",
           "default": "\"default\"",
