@@ -42,6 +42,7 @@ pub struct AgentDetection {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Agent {
     Pi,
+    Pig,
     Claude,
     Codex,
     Gemini,
@@ -68,8 +69,9 @@ pub enum Agent {
 }
 
 impl Agent {
-    pub const ALL: [Self; 24] = [
+    pub const ALL: [Self; 25] = [
         Self::Pi,
+        Self::Pig,
         Self::Claude,
         Self::Codex,
         Self::Gemini,
@@ -95,8 +97,9 @@ impl Agent {
         Self::Muse,
     ];
 
-    pub const SCREEN_MANIFEST_AGENTS: [Self; 22] = [
+    pub const SCREEN_MANIFEST_AGENTS: [Self; 23] = [
         Self::Pi,
+        Self::Pig,
         Self::Claude,
         Self::Codex,
         Self::Gemini,
@@ -124,6 +127,7 @@ impl Agent {
 pub fn agent_label(agent: Agent) -> &'static str {
     match agent {
         Agent::Pi => "pi",
+        Agent::Pig => "pig",
         Agent::Claude => "claude",
         Agent::Codex => "codex",
         Agent::Gemini => "gemini",
@@ -153,6 +157,7 @@ pub fn agent_label(agent: Agent) -> &'static str {
 pub fn interactive_agent_executable(agent: Agent) -> &'static str {
     match agent {
         Agent::Pi => "pi",
+        Agent::Pig => "pig",
         Agent::Claude => "claude",
         Agent::Codex => "codex",
         Agent::Gemini => "gemini",
@@ -199,6 +204,7 @@ fn lookup_agent(name: &str) -> Option<Agent> {
     let name = path_basename(name);
     match name {
         "pi" => Some(Agent::Pi),
+        "pig" => Some(Agent::Pig),
         "claude" | "claude-code" => Some(Agent::Claude),
         "codex" => Some(Agent::Codex),
         "gemini" => Some(Agent::Gemini),
@@ -1062,6 +1068,7 @@ mod tests {
     fn every_agent_has_a_canonical_interactive_executable() {
         let expected = [
             (Agent::Pi, "pi"),
+            (Agent::Pig, "pig"),
             (Agent::Claude, "claude"),
             (Agent::Codex, "codex"),
             (Agent::Gemini, "gemini"),
@@ -1128,6 +1135,13 @@ mod tests {
             assert!(session_identity_only_integration(source, label));
             assert!(Agent::SCREEN_MANIFEST_AGENTS.contains(&agent));
         }
+    }
+
+    #[test]
+    fn identify_pig_process() {
+        assert_eq!(identify_agent("pig"), Some(Agent::Pig));
+        assert_eq!(parse_canonical_agent_label("pig"), Some(Agent::Pig));
+        assert_eq!(identify_agent("pi"), Some(Agent::Pi));
     }
 
     #[test]
